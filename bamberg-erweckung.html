@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bamberger Erweckungsalgorithmus</title>
+  <style>
+    :root {
+      --gold: #c8a84b;
+      --dark: #1a1208;
+      --parchment: #f5e8c0;
+      --ink: #2c1a05;
+      --ember: #8b3a0f;
+      --mist: #7a9aaa;
+      --glow: #ffd97a;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--dark);
+      color: var(--parchment);
+      font-family: 'Georgia', serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem 4rem;
+      background-image:
+        radial-gradient(ellipse at 20% 20%, rgba(139,58,15,0.15) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 80%, rgba(70,100,120,0.1) 0%, transparent 60%);
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    .rooster {
+      font-size: 4rem;
+      animation: crow 4s ease-in-out infinite;
+      display: inline-block;
+    }
+
+    @keyframes crow {
+      0%, 100% { transform: rotate(-5deg) scale(1); }
+      50% { transform: rotate(5deg) scale(1.08); }
+    }
+
+    h1 {
+      font-size: clamp(1.4rem, 4vw, 2.2rem);
+      color: var(--gold);
+      letter-spacing: 0.05em;
+      text-shadow: 0 0 18px rgba(200,168,75,0.5);
+      margin-top: 0.5rem;
+    }
+
+    .subtitle {
+      font-size: 0.9rem;
+      color: var(--mist);
+      margin-top: 0.4rem;
+      font-style: italic;
+    }
+
+    .card {
+      background: rgba(30, 18, 6, 0.85);
+      border: 1px solid rgba(200,168,75,0.3);
+      border-radius: 12px;
+      padding: 1.8rem;
+      width: 100%;
+      max-width: 560px;
+      box-shadow: 0 4px 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(200,168,75,0.15);
+      margin-bottom: 1.4rem;
+    }
+
+    .card-title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--gold);
+      margin-bottom: 1.2rem;
+      border-bottom: 1px solid rgba(200,168,75,0.2);
+      padding-bottom: 0.5rem;
+    }
+
+    .input-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .field label {
+      display: block;
+      font-size: 0.78rem;
+      color: var(--mist);
+      margin-bottom: 0.35rem;
+    }
+
+    .field .field-name {
+      font-size: 0.7rem;
+      color: rgba(200,168,75,0.6);
+      font-style: italic;
+      margin-bottom: 0.2rem;
+    }
+
+    .field input[type="number"] {
+      width: 100%;
+      padding: 0.6rem 0.8rem;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(200,168,75,0.25);
+      border-radius: 6px;
+      color: var(--parchment);
+      font-size: 1.1rem;
+      font-family: 'Georgia', serif;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .field input[type="number"]:focus {
+      border-color: var(--gold);
+      background: rgba(200,168,75,0.07);
+    }
+
+    .btn {
+      width: 100%;
+      margin-top: 1.2rem;
+      padding: 0.9rem;
+      background: linear-gradient(135deg, #8b3a0f, #c8a84b);
+      border: none;
+      border-radius: 8px;
+      color: var(--dark);
+      font-family: 'Georgia', serif;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      letter-spacing: 0.05em;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+
+    .btn:hover { opacity: 0.9; }
+    .btn:active { transform: scale(0.98); }
+
+    /* Result display */
+    .result-card {
+      text-align: center;
+    }
+
+    .wake-time {
+      font-size: clamp(3rem, 14vw, 5rem);
+      color: var(--glow);
+      text-shadow: 0 0 30px rgba(255,217,122,0.6), 0 0 60px rgba(255,217,122,0.2);
+      font-weight: normal;
+      letter-spacing: 0.04em;
+      line-height: 1;
+      margin: 0.4rem 0;
+    }
+
+    .wake-label {
+      font-size: 0.85rem;
+      color: var(--mist);
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      margin-bottom: 0.8rem;
+    }
+
+    .wake-phrase {
+      font-size: 1rem;
+      color: var(--gold);
+      font-style: italic;
+      margin-top: 0.5rem;
+    }
+
+    /* Steps breakdown */
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+      margin-top: 0.5rem;
+    }
+
+    .step {
+      display: flex;
+      align-items: baseline;
+      gap: 0.7rem;
+      font-size: 0.88rem;
+      line-height: 1.45;
+    }
+
+    .step-icon {
+      font-size: 1.1rem;
+      flex-shrink: 0;
+      width: 1.5rem;
+      text-align: center;
+    }
+
+    .step-text {
+      color: var(--parchment);
+      opacity: 0.85;
+    }
+
+    .step-value {
+      color: var(--gold);
+      font-weight: bold;
+      margin-left: auto;
+      white-space: nowrap;
+      padding-left: 0.5rem;
+    }
+
+    .step-row {
+      display: flex;
+      width: 100%;
+      align-items: baseline;
+    }
+
+    /* Sun arc animation */
+    .sun-arc {
+      width: 100%;
+      max-width: 380px;
+      margin: 0 auto 0.5rem;
+      display: block;
+    }
+
+    .formula-display {
+      font-size: 0.8rem;
+      color: rgba(200,168,75,0.5);
+      text-align: center;
+      margin-top: 1rem;
+      font-style: italic;
+    }
+
+    footer {
+      margin-top: 2rem;
+      font-size: 0.72rem;
+      color: rgba(122,154,170,0.4);
+      text-align: center;
+      max-width: 420px;
+      line-height: 1.6;
+    }
+
+    /* Wind indicator */
+    .wind-arrow {
+      display: inline-block;
+      transition: transform 0.5s;
+    }
+
+    .hidden { display: none; }
+
+    /* Divider */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(200,168,75,0.3), transparent);
+      margin: 1rem 0;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="rooster">🐓</div>
+    <h1>Bamberger Erweckungsalgorithmus</h1>
+    <p class="subtitle">Der innere Hahn kräht — wenn die Sonne über der Regnitz ragt</p>
+  </header>
+
+  <!-- Input card -->
+  <div class="card">
+    <div class="card-title">Heutige Zauberzutaten · Bamberg (49.9°N, 10.9°O)</div>
+
+    <div class="input-row">
+      <div class="field">
+        <div class="field-name">TM — Morgenkälte</div>
+        <label>Tiefsttemp. um 6 Uhr (°C)</label>
+        <input type="number" id="tm" value="4" step="0.5" min="-20" max="30" />
+      </div>
+      <div class="field">
+        <div class="field-name">WP — Windpfeil</div>
+        <label>Böenstärke (km/h)</label>
+        <input type="number" id="wp" value="25" step="1" min="0" max="120" />
+      </div>
+    </div>
+
+    <button class="btn" onclick="berechne()">⚗ Erweckungsstunde berechnen</button>
+  </div>
+
+  <!-- Result card -->
+  <div class="card result-card" id="result-card">
+    <div class="card-title">Die Stunde des inneren Hahns</div>
+
+    <svg class="sun-arc" viewBox="0 0 360 100" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#1a2a3a" />
+          <stop offset="100%" stop-color="#0d1318" />
+        </linearGradient>
+      </defs>
+      <rect width="360" height="100" fill="url(#skyGrad)" rx="8" />
+      <!-- Horizon -->
+      <line x1="20" y1="82" x2="340" y2="82" stroke="rgba(200,168,75,0.25)" stroke-width="1" />
+      <!-- Regnitz label -->
+      <text x="180" y="95" fill="rgba(200,168,75,0.3)" font-size="9" text-anchor="middle" font-style="italic">Regnitz</text>
+      <!-- Arc path -->
+      <path id="arc-path" d="" fill="none" stroke="rgba(200,168,75,0.15)" stroke-width="1.5" stroke-dasharray="4 3" />
+      <!-- Sun glow -->
+      <circle id="sun-pos" cx="180" cy="82" r="0" fill="#ffd97a" opacity="0">
+        <animate attributeName="opacity" values="0;1" dur="0.8s" fill="freeze" begin="indefinite" id="sun-anim" />
+      </circle>
+      <circle id="sun-glow" cx="180" cy="82" r="0" fill="rgba(255,217,122,0.15)" opacity="0" />
+      <!-- Time label on arc -->
+      <text id="arc-label" x="180" y="30" fill="rgba(255,217,122,0.8)" font-size="10" text-anchor="middle" opacity="0"></text>
+    </svg>
+
+    <div class="wake-label">Erweckungsstunde</div>
+    <div class="wake-time" id="wake-time">—</div>
+    <div class="wake-phrase" id="wake-phrase"></div>
+
+    <div class="divider"></div>
+
+    <!-- Step breakdown -->
+    <div class="card-title">Alchemistische Rechenschritte</div>
+    <div class="steps" id="steps"></div>
+
+    <div class="formula-display">
+      E = SP + FV·0.3 + (T mod 12)·0.02 − PB
+    </div>
+  </div>
+
+  <footer>
+    Optimiert für Bamberg · 49.9°N 10.9°O · CET (UTC+1)<br>
+    TM &amp; WP täglich aus Bamberg-Wetter laden (z.B. wetter.com)<br>
+    SP wird astronomisch berechnet · Algorithmus bleibt skurril nachvollziehbar
+  </footer>
+
+  <script>
+    const LAT = 49.9;
+    const LON = 10.9;
+
+    function dayOfYear(date) {
+      const start = new Date(date.getFullYear(), 0, 0);
+      const diff = date - start;
+      return Math.floor(diff / 86400000);
+    }
+
+    function solarDeclination(T) {
+      return Math.sin(degToRad(360 * (T - 81) / 365)) * 23.44;
+    }
+
+    function sunriseCET(T, lat, lon) {
+      const D = solarDeclination(T);
+      const latR = degToRad(lat);
+      const DR = degToRad(D);
+
+      // Hour angle at sunrise (sun at horizon, alt = 0)
+      const cosH = -Math.tan(latR) * Math.tan(DR);
+
+      // Clamp for polar edge cases
+      const cosHClamped = Math.max(-1, Math.min(1, cosH));
+      const H = radToDeg(Math.acos(cosHClamped)); // degrees
+
+      // Solar noon UTC adjusted for longitude (approx, ignoring equation of time)
+      const solarNoonUT = 12 - lon / 15;
+
+      // Sunrise UT
+      const sunriseUT = solarNoonUT - H / 15;
+
+      // CET = UT + 1
+      return sunriseUT + 1;
+    }
+
+    function degToRad(d) { return d * Math.PI / 180; }
+    function radToDeg(r) { return r * 180 / Math.PI; }
+
+    function formatHour(h) {
+      const total = Math.round(h * 60);
+      const hh = Math.floor(total / 60);
+      const mm = total % 60;
+      return `${hh}:${String(mm).padStart(2, '0')}`;
+    }
+
+    function wakingPhrase(h) {
+      const phrases = [
+        "Der Hahn kräht — die Regnitz glitzert im Morgenrot.",
+        "Der Nebel hebt, Bambergs Türme grüßen das Licht.",
+        "Ein Windpfeil trifft das Ziel: die perfekte Stunde.",
+        "Kälte weicht, die Sonne peekt über den Domberg.",
+        "Der innere Alchimist erwacht — Gold im Morgenlicht.",
+        "Der Zyklus wippt, die Stunde stimmt — auf!",
+      ];
+      return phrases[Math.floor(h * 7) % phrases.length];
+    }
+
+    function berechne() {
+      const tm = parseFloat(document.getElementById('tm').value);
+      const wp = parseFloat(document.getElementById('wp').value);
+
+      const today = new Date();
+      const T = dayOfYear(today);
+      const D = solarDeclination(T);
+
+      // Step 1: Frost delayer
+      const FV = Math.max(0, 5 - tm / 1.5);
+
+      // Step 2: Sun peek (sunrise CET)
+      const SP = sunriseCET(T, LAT, LON);
+
+      // Step 3: Wind arrow bending factor
+      const PB = Math.min(1, wp / 30) * 0.2;
+
+      // Step 4: Cycle wobble
+      const cycleWobble = (T % 12) / 50;
+
+      // Final wake hour
+      const E = SP + FV * 0.3 + cycleWobble - PB;
+
+      // Display
+      document.getElementById('wake-time').textContent = formatHour(E);
+      document.getElementById('wake-phrase').textContent = wakingPhrase(E);
+
+      // Steps
+      const steps = [
+        {
+          icon: '📅',
+          text: `Zyklustag T = ${T} · Sonnendeklination`,
+          value: `D = ${D.toFixed(2)}°`,
+        },
+        {
+          icon: '🌡️',
+          text: `Frostverzögerer FV = max(0, 5 − ${tm}/1.5)`,
+          value: `FV = ${FV.toFixed(2)}`,
+        },
+        {
+          icon: '🌅',
+          text: `Sonnenpeep (astronomisch, CET)`,
+          value: `SP = ${formatHour(SP)}`,
+        },
+        {
+          icon: '🏹',
+          text: `Windpfeil-Biegung PB = min(1, ${wp}/30)·0.2`,
+          value: `PB = ${PB.toFixed(2)} h`,
+        },
+        {
+          icon: '🔄',
+          text: `Zykluswippung (T mod 12)/50`,
+          value: `+${cycleWobble.toFixed(3)} h`,
+        },
+        {
+          icon: '⚗️',
+          text: `Erweckungsstunde E = SP + FV·0.3 + wipp − PB`,
+          value: `E = ${E.toFixed(3)} h`,
+        },
+      ];
+
+      const container = document.getElementById('steps');
+      container.innerHTML = steps.map(s => `
+        <div class="step">
+          <span class="step-icon">${s.icon}</span>
+          <div class="step-row">
+            <span class="step-text">${s.text}</span>
+            <span class="step-value">${s.value}</span>
+          </div>
+        </div>
+      `).join('');
+
+      // Animate SVG sun
+      animateSun(SP, E);
+
+      // Show result card
+      document.getElementById('result-card').classList.remove('hidden');
+    }
+
+    function animateSun(SP, E) {
+      // Map time 5h..10h to x 20..340 on SVG
+      const minH = 5, maxH = 10.5;
+      const svgW = 320, svgX0 = 20;
+      const toX = h => svgX0 + ((h - minH) / (maxH - minH)) * svgW;
+
+      // Arc: peak at solar noon (~12:15 local), height ~70px above horizon
+      const noonX = toX(12.25);
+      const horizY = 82;
+      const peakY = 12;
+
+      // Draw dashed arc
+      const arcPath = document.getElementById('arc-path');
+      const steps = 60;
+      let d = '';
+      for (let i = 0; i <= steps; i++) {
+        const h = minH + (i / steps) * (maxH - minH);
+        const x = toX(h);
+        // Parabola: y = horizY - amplitude * (1 - ((x-noonX)/halfWidth)^2)
+        const halfW = toX(maxH) - noonX;
+        const frac = (x - noonX) / halfW;
+        const y = horizY - (horizY - peakY) * Math.max(0, 1 - frac * frac);
+        d += (i === 0 ? 'M' : 'L') + `${x.toFixed(1)},${y.toFixed(1)} `;
+      }
+      arcPath.setAttribute('d', d);
+
+      // Place sun at E position
+      const sunX = Math.min(toX(E), toX(maxH));
+      const fracSun = (sunX - noonX) / (toX(maxH) - noonX);
+      const sunY = horizY - (horizY - peakY) * Math.max(0, 1 - fracSun * fracSun);
+
+      const sunPos = document.getElementById('sun-pos');
+      const sunGlow = document.getElementById('sun-glow');
+      const arcLabel = document.getElementById('arc-label');
+
+      sunPos.setAttribute('cx', sunX);
+      sunPos.setAttribute('cy', sunY);
+      sunPos.setAttribute('r', '6');
+      sunPos.setAttribute('opacity', '1');
+
+      sunGlow.setAttribute('cx', sunX);
+      sunGlow.setAttribute('cy', sunY);
+      sunGlow.setAttribute('r', '18');
+      sunGlow.setAttribute('opacity', '1');
+
+      arcLabel.setAttribute('x', sunX);
+      arcLabel.setAttribute('y', Math.max(peakY + 14, sunY - 10));
+      arcLabel.textContent = formatHour(E);
+      arcLabel.setAttribute('opacity', '1');
+
+      // Sunrise marker
+      const spX = toX(SP);
+      const svg = arcPath.closest('svg');
+      // Remove old marker if any
+      const old = svg.querySelector('#sp-marker');
+      if (old) old.remove();
+      const marker = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      marker.setAttribute('id', 'sp-marker');
+      marker.setAttribute('x1', spX); marker.setAttribute('y1', horizY - 5);
+      marker.setAttribute('x2', spX); marker.setAttribute('y2', horizY + 5);
+      marker.setAttribute('stroke', 'rgba(200,168,75,0.5)');
+      marker.setAttribute('stroke-width', '1.5');
+      svg.appendChild(marker);
+      const spLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      spLabel.setAttribute('x', spX);
+      spLabel.setAttribute('y', horizY + 15);
+      spLabel.setAttribute('fill', 'rgba(200,168,75,0.5)');
+      spLabel.setAttribute('font-size', '8');
+      spLabel.setAttribute('text-anchor', 'middle');
+      spLabel.textContent = 'SP ' + formatHour(SP);
+      svg.appendChild(spLabel);
+    }
+
+    // Auto-calculate on load
+    window.addEventListener('load', berechne);
+  </script>
+</body>
+</html>
